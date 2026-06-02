@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HashForge — SHA Family · Cryptographic Utility</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#070b14;--bg1:#0e1524;--bg2:#121c2e;--bg3:#1a2540;--bg4:#202e4a;
+  --acc:#22d3ee;--acc2:#6366f1;--acc3:#34d399;--acc4:#fbbf24;--danger:#f43f5e;
+  --t1:#e8eef7;--t2:#94a3b8;--t3:#5f7290;--bdr:#1c2b44;--bdr2:#2c4366;
+  --mono:'JetBrains Mono',monospace;--head:'Syne',sans-serif;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+  --glow:0 0 0 1px rgba(34,211,238,.25),0 6px 22px -8px rgba(34,211,238,.35);
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+body{
+  background:
+    radial-gradient(900px 500px at 12% -8%, rgba(99,102,241,.12), transparent 60%),
+    radial-gradient(800px 420px at 100% 0%, rgba(34,211,238,.10), transparent 55%),
+    var(--bg0);
+  background-attachment:fixed;
+  color:var(--t1);font-family:var(--mono);font-size:12px;min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.app{max-width:920px;margin:0 auto;padding:22px 14px 40px}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--bdr);margin-bottom:14px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-ico{width:30px;height:30px;background:linear-gradient(135deg,var(--acc),var(--acc2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.logo-txt{font-family:var(--head);font-size:17px;font-weight:800;letter-spacing:-.5px}
+.logo-txt span{color:var(--acc)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.badge{background:var(--bg3);border:1px solid var(--bdr2);color:var(--acc3);font-size:9px;padding:3px 8px;border-radius:4px;letter-spacing:1px}
+.dot-live{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t3)}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--acc3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.sc{background:linear-gradient(180deg,var(--bg2),var(--bg1));border:1px solid var(--bdr);border-radius:9px;padding:9px 11px;box-shadow:var(--shadow)}
+.sc-lbl{font-size:9px;color:var(--t3);letter-spacing:.8px;margin-bottom:3px}
+.sc-val{font-size:16px;font-weight:600;font-family:var(--head);color:var(--t1)}
+.sc-val.a{color:var(--acc)}.sc-val.g{color:var(--acc3)}.sc-val.y{color:var(--acc4);font-size:13px}
+.sc-sub{font-size:9px;color:var(--t3);margin-top:1px}
+.algo-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.ab{background:linear-gradient(180deg,var(--bg2),var(--bg1));border:1px solid var(--bdr);color:var(--t2);padding:9px 6px;border-radius:9px;cursor:pointer;font-family:var(--mono);font-size:11px;text-align:center;transition:all .15s;box-shadow:var(--shadow)}
+.ab:hover{border-color:var(--bdr2);color:var(--t1);transform:translateY(-1px)}
+.ab.on{border-color:var(--acc);color:var(--acc);background:rgba(34,211,238,.08);box-shadow:var(--glow)}
+.ab-name{font-weight:600;font-size:11.5px;display:block}
+.ab-bits{font-size:9px;color:var(--t3);margin-top:2px}
+.ab.on .ab-bits{color:rgba(34,211,238,.55)}
+.spd{font-size:8px;padding:2px 5px;border-radius:3px;margin-left:3px}
+.sf{background:rgba(16,185,129,.15);color:var(--acc3)}
+.sm{background:rgba(245,158,11,.15);color:var(--acc4)}
+.ss{background:rgba(124,58,237,.15);color:#a78bfa}
+.main{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.panel{background:var(--bg1);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.ph{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:7px 13px;display:flex;align-items:center;justify-content:space-between}
+.ph-lbl{font-size:9px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase}
+.ph-meta{font-size:9px;color:var(--t3);display:flex;gap:8px;align-items:center}
+.pb{padding:11px;flex:1}
+textarea{width:100%;background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--mono);font-size:12px;resize:none;line-height:1.6;min-height:110px}
+textarea::placeholder{color:var(--t3)}
+.tgl-wrap{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--t3)}
+.tgl{width:28px;height:14px;background:var(--bg3);border:1px solid var(--bdr);border-radius:7px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tgl.on{background:rgba(0,212,255,.25);border-color:var(--acc)}
+.tgl-d{width:9px;height:9px;background:var(--t3);border-radius:50%;position:absolute;top:2px;left:2px;transition:all .2s}
+.tgl.on .tgl-d{background:var(--acc);transform:translateX(14px)}
+.char-bar{display:flex;justify-content:flex-end;padding:0 13px 7px;gap:10px}
+.cbit{font-size:9px;color:var(--t3)}
+.cbit .v{color:var(--t2)}
+.pb-btns{padding:0 11px 11px;display:flex;gap:5px}
+.btn{background:var(--bg3);border:1px solid var(--bdr);color:var(--t2);padding:4px 10px;border-radius:5px;cursor:pointer;font-family:var(--mono);font-size:10px;transition:all .15s;display:flex;align-items:center;gap:4px}
+.btn:hover{border-color:var(--bdr2);color:var(--t1);background:var(--bg4)}
+.btn.pri{border-color:var(--acc);color:var(--acc);background:rgba(0,212,255,.06)}
+.btn.pri:hover{background:rgba(0,212,255,.12)}
+.btn.dng{border-color:var(--danger);color:var(--danger)}
+.btn.ok{border-color:var(--acc3)!important;color:var(--acc3)!important}
+.hash-out{min-height:72px}
+.hv{font-family:var(--mono);font-size:10.5px;color:var(--acc3);word-break:break-all;line-height:1.8;letter-spacing:.4px;animation:rev .25s ease}
+@keyframes rev{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.hp{color:var(--t3);font-size:11px;font-style:italic}
+.hm{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:7px;border-top:1px solid var(--bdr)}
+.hi{display:flex;gap:10px}
+.hic{font-size:9px;color:var(--t3);display:flex;align-items:center;gap:3px}
+.hic .v{color:var(--t2)}
+.btn-row{display:flex;gap:5px}
+.mhl{display:flex;flex-direction:column;gap:5px}
+.mhi{background:var(--bg2);border:1px solid var(--bdr);border-radius:5px;padding:7px 11px}
+.mha{font-size:9px;letter-spacing:.8px;color:var(--t3);margin-bottom:3px}
+.mhv{font-size:10px;color:var(--acc3);word-break:break-all;line-height:1.6}
+.vp{background:var(--bg1);border:1px solid var(--bdr);border-radius:11px;margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+.vb{padding:10px 12px;display:flex;gap:8px;align-items:center}
+.vi{flex:1;background:var(--bg2);border:1px solid var(--bdr);color:var(--t1);padding:7px 11px;border-radius:5px;font-family:var(--mono);font-size:11px;outline:none}
+.vi:focus{border-color:var(--bdr2)}
+.vr{font-size:11px;display:flex;align-items:center;gap:5px;min-width:120px;white-space:nowrap}
+.fz{border:1px dashed var(--bdr2);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg1);margin-bottom:10px}
+.fz:hover,.fz.drag{border-color:var(--acc);background:rgba(0,212,255,.03)}
+.fz-t{font-size:11px;color:var(--t2)}
+.fz-s{font-size:10px;color:var(--t3);margin-top:3px}
+.prog{height:2px;background:var(--bg3);border-radius:1px;overflow:hidden;margin-top:7px}
+.prog-f{height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc));transition:width .3s;border-radius:1px}
+.fi-row{display:none;align-items:center;gap:7px;padding:7px 11px;background:var(--bg2);border:1px solid var(--bdr);border-radius:5px;font-size:10px;margin-bottom:10px}
+.fn{color:var(--t1);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs{color:var(--t3)}
+input[type=file]{display:none}
+.step-panel{background:var(--bg1);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)}
+.sp-hdr{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:7px 13px;display:flex;align-items:center;justify-content:space-between}
+.sp-tabs{display:flex;gap:5px}
+.sp-tab{font-size:9px;padding:3px 10px;border-radius:4px;cursor:pointer;color:var(--t3);border:1px solid transparent;transition:all .15s}
+.sp-tab.on{background:rgba(0,212,255,.12);color:var(--acc);border-color:rgba(0,212,255,.3)}
+.sp-body{padding:12px}
+.stepper{display:flex;flex-direction:column}
+.si{display:flex;gap:0}
+.sl{display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0}
+.sc2{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;border:1px solid var(--bdr);background:var(--bg2);color:var(--t3);transition:all .3s}
+.sc2.done{background:rgba(16,185,129,.15);border-color:var(--acc3);color:var(--acc3)}
+.sc2.active{background:rgba(0,212,255,.12);border-color:var(--acc);color:var(--acc)}
+.sline{width:1px;flex:1;background:var(--bdr);margin:3px 0}
+.sbody{padding:0 0 14px 10px;flex:1;min-width:0}
+.stitle{font-size:11px;color:var(--t2);margin-bottom:5px;padding-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.stitle.active{color:var(--t1)}.stitle.done{color:var(--acc3)}
+.stag{font-size:8px;padding:2px 6px;border-radius:3px;background:var(--bg3);color:var(--t3);letter-spacing:.5px}
+.stag.info{background:rgba(0,212,255,.1);color:var(--acc)}
+.scard{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;display:none;margin-top:6px}
+.scard.show{display:block}
+.desc{font-size:11px;color:var(--t2);line-height:1.6;margin-bottom:7px}
+.m2{font-family:var(--mono);font-size:10.5px;color:var(--t2);word-break:break-all;line-height:1.9}
+.hl2{color:var(--acc)}.ok2{color:var(--acc3)}.warn2{color:var(--acc4)}
+.dvd{height:1px;background:var(--bdr);margin:7px 0}
+.iv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}
+.iv-box{background:var(--bg1);border:1px solid var(--bdr);border-radius:6px;padding:5px 7px;text-align:center}
+.iv-lbl{font-size:8px;color:var(--t3);margin-bottom:2px;letter-spacing:.5px}
+.iv-val{font-size:9.5px;font-family:var(--mono);color:var(--t2)}
+.iv-val.a{color:var(--acc)}.iv-val.g{color:var(--acc3)}
+.mini-bits{display:flex;flex-wrap:wrap;gap:2px;margin-top:5px}
+.bit{width:10px;height:10px;border-radius:2px;background:var(--bg3);border:1px solid var(--bdr)}
+.bit.one{background:rgba(0,212,255,.25);border-color:rgba(0,212,255,.5)}
+.bit.pad{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.5)}
+.bit.len{background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.5)}
+.leg{display:flex;gap:10px;margin-top:5px}
+.li{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t3)}
+.ld{width:9px;height:9px;border-radius:2px}
+.rv-vis{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.rv-row{display:flex;align-items:center;gap:7px}
+.rv-lbl{font-size:9px;color:var(--t3);width:48px;flex-shrink:0}
+.rv-bar{flex:1;height:14px;border-radius:3px;background:var(--bg1);border:1px solid var(--bdr);overflow:hidden}
+.rv-fill{height:100%;background:rgba(0,212,255,.25)}
+.rv-val{font-size:9px;font-family:var(--mono);color:var(--t2);min-width:70px;text-align:right}
+.final-box{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);border-radius:7px;padding:9px 12px;margin-top:7px}
+.fb-lbl{font-size:9px;color:var(--acc3);letter-spacing:.8px;margin-bottom:3px}
+.fb-val{font-size:10px;font-family:var(--mono);color:var(--acc3);word-break:break-all;line-height:1.7}
+.nav-row{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)}
+.nav-btn{padding:5px 14px;border-radius:5px;border:1px solid var(--bdr);background:transparent;color:var(--t2);cursor:pointer;font-size:10px;font-family:var(--mono);transition:all .15s}
+.nav-btn:hover{background:var(--bg3);color:var(--t1)}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.nav-btn.pri{background:rgba(0,212,255,.1);color:var(--acc);border-color:rgba(0,212,255,.3)}
+.nav-btn.pri:hover{background:rgba(0,212,255,.18)}
+.sp-prog{display:flex;gap:4px;align-items:center}
+.sp-dot{width:6px;height:6px;border-radius:50%;background:var(--bdr2);transition:all .2s}
+.sp-dot.on{background:var(--acc);width:16px;border-radius:3px}
+.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:6px;padding:7px 10px;margin-top:6px;font-size:10px;color:var(--acc4)}
+</style>
+</head>
+<body>
+
+<div class="app">
+<h2 class="sr-only">SHAForge — SHA oilasi hash generatsiyasi va bosqichma-bosqich vizualizatsiya</h2>
+
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-ico"><i class="ti ti-hexagon-letter-s" style="font-size:18px;color:#fff" aria-hidden="true"></i></div>
+    <div>
+      <div class="logo-txt"><span>SHA</span>FORGE</div>
+      <div style="font-size:9px;color:var(--t3);letter-spacing:1px">SHA FAMILY · SHA-1 / SHA-256 / SHA-512</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="badge">FIPS 180-4</div>
+    <div class="dot-live"><div class="dot"></div>ENGINE READY</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="sc"><div class="sc-lbl">CHARS</div><div class="sc-val a" id="st-chars">0</div><div class="sc-sub">input length</div></div>
+  <div class="sc"><div class="sc-lbl">HASH BITS</div><div class="sc-val g" id="st-bits">256</div><div class="sc-sub">output size</div></div>
+  <div class="sc"><div class="sc-lbl">SPEED</div><div class="sc-val y" id="st-spd">— ms</div><div class="sc-sub">last compute</div></div>
+  <div class="sc"><div class="sc-lbl">HEX LEN</div><div class="sc-val" id="st-hex">64</div><div class="sc-sub">output chars</div></div>
+</div>
+
+<div class="algo-row">
+  <button class="ab" data-a="sha1" onclick="selAlgo('sha1',this)">
+    <span class="ab-name">SHA-1</span><span class="ab-bits">160-bit <span class="spd sm">LEGACY</span></span>
+  </button>
+  <button class="ab on" data-a="sha256" onclick="selAlgo('sha256',this)">
+    <span class="ab-name">SHA-256</span><span class="ab-bits">256-bit <span class="spd sf">STANDARD</span></span>
+  </button>
+  <button class="ab" data-a="sha512" onclick="selAlgo('sha512',this)">
+    <span class="ab-name">SHA-512</span><span class="ab-bits">512-bit <span class="spd ss">STRONG</span></span>
+  </button>
+</div>
+
+<div class="main">
+  <div class="panel">
+    <div class="ph">
+      <span class="ph-lbl">INPUT BUFFER</span>
+      <div class="tgl-wrap">
+        <div class="tgl" id="mtgl" onclick="toggleMulti()"><div class="tgl-d"></div></div>
+        <span>ALL ALGOS</span>
+      </div>
+    </div>
+    <div class="pb">
+      <textarea id="inp" placeholder="Matn, unicode, raqamlar, belgilar...&#10;&#10;Cheksiz uzunlik, UTF-8 qo'llab-quvvatlanadi" oninput="onInp()" rows="7"></textarea>
+    </div>
+    <div class="char-bar">
+      <div class="cbit">BYTES: <span class="v" id="bc">0</span></div>
+      <div class="cbit">CHARS: <span class="v" id="cc">0</span></div>
+      <div class="cbit">LINES: <span class="v" id="lc">1</span></div>
+    </div>
+    <div class="pb-btns">
+      <button class="btn dng" onclick="clearAll()"><i class="ti ti-trash" style="font-size:13px" aria-hidden="true"></i> CLEAR</button>
+      <button class="btn" onclick="loadSample()"><i class="ti ti-flask" style="font-size:13px" aria-hidden="true"></i> SAMPLE</button>
+      <button class="btn" onclick="pasteClip()"><i class="ti ti-clipboard" style="font-size:13px" aria-hidden="true"></i> PASTE</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">
+      <span class="ph-lbl">HASH OUTPUT</span>
+      <div class="ph-meta"><span id="algo-disp">SHA-256</span><span id="time-badge">—</span></div>
+    </div>
+    <div class="pb">
+      <div id="single-out" class="hash-out">
+        <div class="hp" id="hplc">Matn kiriting...</div>
+        <div class="hv" id="hval" style="display:none"></div>
+      </div>
+      <div id="multi-out" style="display:none" class="mhl"></div>
+    </div>
+    <div class="hm">
+      <div class="hi">
+        <div class="hic">BITS: <span class="v" id="i-bits">256</span></div>
+        <div class="hic">HEX: <span class="v" id="i-hex">64</span></div>
+        <div class="hic">ALGO: <span class="v" id="i-algo">SHA-256</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn pri" onclick="copyHash()" id="cpbtn"><i class="ti ti-copy" style="font-size:13px" aria-hidden="true"></i> COPY</button>
+        <button class="btn" onclick="exportTxt()"><i class="ti ti-download" style="font-size:13px" aria-hidden="true"></i> TXT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="vp">
+  <div class="ph"><span class="ph-lbl">HASH VERIFICATION</span></div>
+  <div class="vb">
+    <input type="text" class="vi" id="vi" placeholder="Kutilgan hash ni paste qiling (tekshirish uchun)..." oninput="verifyHash()"/>
+    <div class="vr" id="vr">
+      <i class="ti ti-minus" style="color:var(--t3);font-size:14px" aria-hidden="true"></i>
+      <span style="color:var(--t3);font-size:10px">Taqqoslash yo'q</span>
+    </div>
+  </div>
+</div>
+
+<div class="fz" id="fz" onclick="document.getElementById('fi').click()" ondragover="onDrag(event)" ondragleave="offDrag()" ondrop="onDrop(event)">
+  <input type="file" id="fi" onchange="onFileSel(event)"/>
+  <i class="ti ti-file-upload" style="font-size:24px;color:var(--t3);display:block;margin-bottom:7px" aria-hidden="true"></i>
+  <div class="fz-t">FAYL TASHLANG yoki bosib tanlang</div>
+  <div class="fz-s">Har qanday format · Multi-MB streaming · UTF-8 safe</div>
+  <div class="prog"><div class="prog-f" id="pf" style="width:0%"></div></div>
+</div>
+<div class="fi-row" id="file-info-row">
+  <i class="ti ti-file-check" style="color:var(--acc3);font-size:14px" aria-hidden="true"></i>
+  <span class="fn" id="fname"></span>
+  <span class="fs" id="fsize"></span>
+  <button class="btn" onclick="clearFile()" style="padding:2px 7px;font-size:9px"><i class="ti ti-x" style="font-size:11px" aria-hidden="true"></i></button>
+</div>
+
+<div class="step-panel">
+  <div class="sp-hdr">
+    <div style="display:flex;align-items:center;gap:8px">
+      <i class="ti ti-brain" style="font-size:14px;color:var(--acc)" aria-hidden="true"></i>
+      <span style="font-size:9px;letter-spacing:1.5px;color:var(--t3)">HASH JARAYONI — BOSQICHMA-BOSQICH</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="sp-prog" id="sp-prog"></div>
+      <div class="sp-tabs">
+        <div class="sp-tab" onclick="setStepAlgo('sha1',this)">SHA-1</div>
+        <div class="sp-tab on" onclick="setStepAlgo('sha256',this)">SHA-256</div>
+        <div class="sp-tab" onclick="setStepAlgo('sha512',this)">SHA-512</div>
+      </div>
+    </div>
+  </div>
+  <div class="sp-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--t3)" id="step-input-preview">Input: <span style="color:var(--t2)">"Hello"</span></div>
+    </div>
+    <div class="stepper" id="stepper"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="nb-prev" onclick="prevStep()" disabled><i class="ti ti-arrow-left" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i> Oldingi</button>
+      <button class="nav-btn pri" id="nb-next" onclick="nextStep()">Keyingi <i class="ti ti-arrow-right" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i></button>
+      <button class="nav-btn" onclick="rebuildSteps()" style="margin-left:auto"><i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i> Yangilash</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let curAlgo = 'sha256';
+let multiMode = false;
+let curHash = '';
+let fileData = null;
+let stepAlgo = 'sha256';
+let curStep = -1;
+let steps = [];
+
+const ALGO_META = {
+  sha1:   { name:'SHA-1',   bits:160, hexlen:40  },
+  sha256: { name:'SHA-256', bits:256, hexlen:64  },
+  sha512: { name:'SHA-512', bits:512, hexlen:128 }
+};
+const ALGO_LIST = ['sha1','sha256','sha512'];
+
+// ═══════════════════════════════════════
+// HASH FUNCTIONS — CryptoJS ishlatiladi (to'g'ri natija kafolatlangan)
+// ═══════════════════════════════════════
+
+// CryptoJS to'liq SHA oilasini qo'llab-quvvatlaydi → natija FIPS 180-4 ga aniq mos.
+const CJS = {
+  sha1:   CryptoJS.SHA1,
+  sha256: CryptoJS.SHA256,
+  sha512: CryptoJS.SHA512
+};
+
+function hashText(algo, text) {
+  // UTF-8 sifatida talqin qilish (unicode/emoji to'g'ri hisoblanadi)
+  return CJS[algo](CryptoJS.enc.Utf8.parse(text)).toString();
+}
+
+function hashWordArray(algo, wa) {
+  return CJS[algo](wa).toString();
+}
+
+// ═══════════════════════════════════════
+// MAIN HASH ENGINE
+// ═══════════════════════════════════════
+
+function selAlgo(a, btn) {
+  curAlgo = a;
+  document.querySelectorAll('.ab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const meta = ALGO_META[a];
+  document.getElementById('algo-disp').textContent = meta.name;
+  document.getElementById('i-bits').textContent = meta.bits;
+  document.getElementById('st-bits').textContent = meta.bits;
+  document.getElementById('i-hex').textContent = meta.hexlen;
+  document.getElementById('st-hex').textContent = meta.hexlen;
+  document.getElementById('i-algo').textContent = meta.name;
+  computeHash();
+}
+
+function computeHash() {
+  const txt = document.getElementById('inp').value;
+  if (!fileData && txt === '') { showPH(); return; }
+
+  const t0 = performance.now();
+  let hash = '';
+  try {
+    if (fileData) {
+      hash = hashWordArray(curAlgo, fileData);
+    } else {
+      hash = hashText(curAlgo, txt);
+    }
+  } catch(e) { hash = 'ERROR: ' + e.message; }
+  const ms = (performance.now() - t0).toFixed(2);
+
+  curHash = hash;
+  document.getElementById('time-badge').textContent = ms + 'ms';
+  document.getElementById('st-spd').textContent = ms + 'ms';
+
+  if (!multiMode) {
+    document.getElementById('hplc').style.display = 'none';
+    const hv = document.getElementById('hval');
+    hv.style.display = 'block';
+    hv.textContent = hash;
+    hv.className = 'hv'; void hv.offsetWidth;
+  } else {
+    computeMulti();
+  }
+  verifyHash();
+}
+
+function computeMulti() {
+  const txt = document.getElementById('inp').value;
+  const res = ALGO_LIST.map(a => ({
+    a,
+    h: fileData ? hashWordArray(a, fileData) : hashText(a, txt)
+  }));
+  document.getElementById('multi-out').innerHTML = res.map(r =>
+    `<div class="mhi"><div class="mha">${ALGO_META[r.a].name} · ${ALGO_META[r.a].bits}-bit</div><div class="mhv">${r.h}</div></div>`
+  ).join('');
+}
+
+function showPH() {
+  document.getElementById('hplc').style.display = 'block';
+  document.getElementById('hval').style.display = 'none';
+  document.getElementById('multi-out').innerHTML = '';
+  curHash = '';
+  document.getElementById('time-badge').textContent = '—';
+  document.getElementById('st-spd').textContent = '— ms';
+  verifyHash();
+}
+
+function onInp() {
+  fileData = null;
+  document.getElementById('file-info-row').style.display = 'none';
+  const txt = document.getElementById('inp').value;
+  document.getElementById('st-chars').textContent = txt.length;
+  document.getElementById('cc').textContent = txt.length;
+  document.getElementById('bc').textContent = new TextEncoder().encode(txt).length;
+  document.getElementById('lc').textContent = txt.split('\n').length;
+  computeHash();
+  // stepper ham shu inputdan yangilansin
+  rebuildSteps();
+}
+
+function toggleMulti() {
+  multiMode = !multiMode;
+  document.getElementById('mtgl').classList.toggle('on', multiMode);
+  document.getElementById('single-out').style.display = multiMode ? 'none' : 'block';
+  document.getElementById('multi-out').style.display = multiMode ? 'flex' : 'none';
+  if (multiMode) { document.getElementById('multi-out').style.flexDirection = 'column'; computeMulti(); }
+  else computeHash();
+}
+
+function clearAll() {
+  document.getElementById('inp').value = '';
+  fileData = null;
+  document.getElementById('file-info-row').style.display = 'none';
+  document.getElementById('vi').value = '';
+  ['st-chars','cc','bc'].forEach(id => document.getElementById(id).textContent = '0');
+  document.getElementById('lc').textContent = '1';
+  document.getElementById('pf').style.width = '0%';
+  showPH();
+  rebuildSteps();
+}
+
+function copyHash() {
+  if (!curHash) return;
+  navigator.clipboard.writeText(curHash).then(() => {
+    const b = document.getElementById('cpbtn');
+    b.innerHTML = '<i class="ti ti-check" style="font-size:13px" aria-hidden="true"></i> COPIED';
+    b.classList.add('ok');
+    setTimeout(() => { b.innerHTML = '<i class="ti ti-copy" style="font-size:13px" aria-hidden="true"></i> COPY'; b.classList.remove('ok'); }, 1500);
+  });
+}
+
+function exportTxt() {
+  if (!curHash) return;
+  const txt = document.getElementById('inp').value;
+  const c = ['=== HASHFORGE EXPORT ===','Algorithm: '+ALGO_META[curAlgo].name,'Date: '+new Date().toISOString(),'','INPUT:',txt||'[file]','','HASH:',curHash].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([c],{type:'text/plain'}));
+  a.download = 'hashforge_'+curAlgo+'_'+Date.now()+'.txt';
+  a.click();
+}
+
+function verifyHash() {
+  const exp = document.getElementById('vi').value.trim().toLowerCase();
+  const vr = document.getElementById('vr');
+  if (!exp || !curHash) {
+    vr.innerHTML = '<i class="ti ti-minus" style="color:var(--t3);font-size:14px" aria-hidden="true"></i><span style="color:var(--t3);font-size:10px">Taqqoslash yo\'q</span>';
+    return;
+  }
+  const ok = curHash.toLowerCase() === exp;
+  vr.innerHTML = ok
+    ? '<i class="ti ti-circle-check" style="color:var(--acc3);font-size:14px" aria-hidden="true"></i><span style="color:var(--acc3);font-size:10px">MOS KELDI</span>'
+    : '<i class="ti ti-circle-x" style="color:var(--danger);font-size:14px" aria-hidden="true"></i><span style="color:var(--danger);font-size:10px">MOS KELMADI</span>';
+}
+
+function loadSample() {
+  const s = ['Hello, World!','The quick brown fox jumps over the lazy dog','HashForge v3.1','🔐 Unicode: مرحبا • Привет • 你好','abc'];
+  document.getElementById('inp').value = s[Math.floor(Math.random() * s.length)];
+  onInp();
+}
+
+async function pasteClip() {
+  try { const t = await navigator.clipboard.readText(); document.getElementById('inp').value = t; onInp(); } catch(e) {}
+}
+
+// FILE
+function onDrag(e) { e.preventDefault(); document.getElementById('fz').classList.add('drag'); }
+function offDrag() { document.getElementById('fz').classList.remove('drag'); }
+function onDrop(e) { e.preventDefault(); offDrag(); if (e.dataTransfer.files[0]) procFile(e.dataTransfer.files[0]); }
+function onFileSel(e) { if (e.target.files[0]) procFile(e.target.files[0]); }
+
+function procFile(file) {
+  document.getElementById('fname').textContent = file.name;
+  document.getElementById('fsize').textContent = fmtBytes(file.size);
+  document.getElementById('file-info-row').style.display = 'flex';
+  document.getElementById('inp').value = '';
+  const r = new FileReader();
+  let p = 0;
+  const iv = setInterval(() => { p = Math.min(p + 10, 90); document.getElementById('pf').style.width = p + '%'; }, 25);
+  r.onload = e => {
+    clearInterval(iv);
+    document.getElementById('pf').style.width = '100%';
+    const a = new Uint8Array(e.target.result);
+    const w = [];
+    for (let i = 0; i < a.length; i += 4) w.push((a[i]<<24)|(a[i+1]<<16)|(a[i+2]<<8)|a[i+3]);
+    fileData = CryptoJS.lib.WordArray.create(w, a.length);
+    document.getElementById('bc').textContent = fmtBytes(file.size);
+    computeHash();
+    setTimeout(() => document.getElementById('pf').style.width = '0%', 700);
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function clearFile() { fileData = null; document.getElementById('file-info-row').style.display = 'none'; document.getElementById('fi').value = ''; showPH(); }
+function fmtBytes(b) { return b < 1024 ? b+' B' : b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(2)+' MB'; }
+
+// ═══════════════════════════════════════
+// STEP VISUALIZER — inputdan REAL hash ishlatiladi
+// ═══════════════════════════════════════
+
+function setStepAlgo(a, btn) {
+  stepAlgo = a;
+  document.querySelectorAll('.sp-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  rebuildSteps();
+}
+
+function getCurrentText() {
+  return document.getElementById('inp').value || 'Hello';
+}
+
+function rebuildSteps() {
+  const txt = getCurrentText();
+  const preview = txt.length > 20 ? txt.slice(0,20)+'...' : txt;
+  document.getElementById('step-input-preview').innerHTML =
+    `Input: <span style="color:var(--t2)">"${preview.replace(/</g,'&lt;')}"</span> · Algoritm: <span style="color:var(--acc)">${ALGO_META[stepAlgo].name}</span>`;
+
+  // step algoritmiga mos REAL hash hisobla
+  let realHash = '';
+  try { realHash = hashText(stepAlgo, txt); } catch(e) { realHash = '—'; }
+
+  steps = stepAlgo === 'sha1'   ? buildSHA1Steps(txt, realHash)
+        : stepAlgo === 'sha512' ? buildSHA512Steps(txt, realHash)
+        :                         buildSHA256Steps(txt, realHash);
+
+  curStep = -1;
+  renderStepper();
+  renderProgDots();
+  nextStep();
+}
+
+function renderStepper() {
+  document.getElementById('stepper').innerHTML = steps.map((s,i) => `
+    <div class="si" id="si-${i}">
+      <div class="sl">
+        <div class="sc2" id="sc-${i}">${i+1}</div>
+        ${i < steps.length-1 ? '<div class="sline"></div>' : ''}
+      </div>
+      <div class="sbody">
+        <div class="stitle" id="st-${i}">${s.title}<span class="stag" id="stg-${i}">${s.tag}</span></div>
+        <div class="scard" id="sk-${i}">${s.content}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderProgDots() {
+  document.getElementById('sp-prog').innerHTML = steps.map((_,i) =>
+    `<div class="sp-dot" id="pd-${i}"></div>`
+  ).join('');
+}
+
+function nextStep() {
+  if (curStep < steps.length - 1) { curStep++; activateStep(curStep); }
+  document.getElementById('nb-prev').disabled = curStep <= 0;
+  document.getElementById('nb-next').disabled = curStep >= steps.length - 1;
+}
+
+function prevStep() {
+  if (curStep > 0) { deactivateStep(curStep); curStep--; activateStep(curStep); }
+  document.getElementById('nb-prev').disabled = curStep <= 0;
+  document.getElementById('nb-next').disabled = curStep >= steps.length - 1;
+}
+
+function activateStep(i) {
+  document.getElementById('sc-'+i).className = 'sc2 active';
+  document.getElementById('st-'+i).classList.add('active');
+  document.getElementById('st-'+i).classList.remove('done');
+  document.getElementById('sk-'+i).classList.add('show');
+  document.getElementById('stg-'+i).classList.add('info');
+  for (let j = 0; j < i; j++) {
+    const c = document.getElementById('sc-'+j);
+    if (c) { c.className = 'sc2 done'; c.innerHTML = '<i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i>'; }
+    const t = document.getElementById('st-'+j);
+    if (t) { t.classList.add('done'); t.classList.remove('active'); }
+  }
+  document.querySelectorAll('.sp-dot').forEach(d => d.classList.remove('on'));
+  const pd = document.getElementById('pd-'+i);
+  if (pd) pd.classList.add('on');
+}
+
+function deactivateStep(i) {
+  const c = document.getElementById('sk-'+i);
+  if (c) c.classList.remove('show');
+  const t = document.getElementById('stg-'+i);
+  if (t) t.classList.remove('info');
+}
+
+// ── helpers ──
+function toH8(n) { return (n >>> 0).toString(16).padStart(8, '0'); }
+
+// ═══════════════════════════════════════
+// SHA-256 STEPS
+// ═══════════════════════════════════════
+function buildSHA256Steps(text, finalHash) {
+  const bytes = new TextEncoder().encode(text);
+  const bLen = bytes.length, bitLen = bLen * 8;
+  const hexMsg = Array.from(bytes).slice(0,24).map(b=>b.toString(16).padStart(2,'0')).join(' ');
+  const padTotal = Math.ceil((bLen + 9) / 64) * 64;
+  const padZeros = padTotal - bLen - 9;
+  const H0 = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const Ksample = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5];
+  const sampleBits = Array.from(bytes).flatMap(b => (b>>>0).toString(2).padStart(8,'0').split('')).map(Number).slice(0,48);
+  const hashParts = finalHash.match(/.{8}/g) || [];
+
+  return [
+    {
+      title: '1-qadam: UTF-8 kodlash',
+      tag: 'ENCODE',
+      content: `
+        <div class="desc">Har bir belgi UTF-8 standarti bo'yicha 1–4 baytga aylantiriladi.</div>
+        <div class="m2"><span class="hl2">"${text.slice(0,14).replace(/</g,'&lt;')}${text.length>14?'...':''}"</span> → HEX baytlar:</div>
+        <div class="m2" style="margin-top:5px;letter-spacing:.5px">${hexMsg}${bLen>24?' <span style="color:var(--t3)">...</span>':''}</div>
+        <div class="mini-bits">${sampleBits.map(b=>`<div class="bit ${b?'one':''}"></div>`).join('')}${bytes.length*8>48?`<span style="font-size:9px;color:var(--t3);margin-left:4px">... ${bitLen} bit</span>`:''}</div>
+        <div class="leg">
+          <div class="li"><div class="ld" style="background:rgba(0,212,255,.25);border:1px solid rgba(0,212,255,.5)"></div>1-bit</div>
+          <div class="li"><div class="ld" style="background:var(--bg3);border:1px solid var(--bdr)"></div>0-bit</div>
+        </div>
+        <div class="dvd"></div>
+        <div class="m2">Jami: <span class="ok2">${bitLen} bit</span> = <span class="ok2">${bLen} bayt</span></div>
+      `
+    },
+    {
+      title: '2-qadam: Padding — 512-bitga to\'ldirish',
+      tag: 'PAD',
+      content: `
+        <div class="desc">SHA-256 xabar uzunligi 512-bitning ko'paytmasi bo'lishini talab qiladi. "1" biti, nol bitlar va uzunlik qo'shiladi.</div>
+        <div class="mini-bits">
+          ${Array.from({length:Math.min(Math.ceil(bitLen/8),20)}).map(()=>'<div class="bit one"></div>').join('')}
+          ${Math.ceil(bitLen/8)>20?'<span style="font-size:9px;color:var(--t3);margin:0 3px">...</span>':''}
+          <div class="bit pad" title="0x80"></div>
+          ${Array.from({length:Math.min(padZeros,6)}).map(()=>'<div class="bit pad" style="opacity:.4"></div>').join('')}
+          ${padZeros>6?`<span style="font-size:9px;color:var(--t3);margin:0 3px">(${padZeros} ta 0)</span>`:''}
+          ${Array.from({length:8}).map(()=>'<div class="bit len"></div>').join('')}
+        </div>
+        <div class="leg">
+          <div class="li"><div class="ld" style="background:rgba(0,212,255,.25)"></div>asl ma'lumot</div>
+          <div class="li"><div class="ld" style="background:rgba(245,158,11,.2)"></div>padding (0x80 + 0lar)</div>
+          <div class="li"><div class="ld" style="background:rgba(16,185,129,.2)"></div>uzunlik (64-bit, big-endian)</div>
+        </div>
+        <div class="dvd"></div>
+        <div class="m2">Nollar soni: <span class="warn2">${padZeros} ta</span></div>
+        <div class="m2">Uzunlik qiymati: <span class="ok2">${toH8(0)} ${toH8(bitLen)}</span></div>
+        <div class="m2">Jami blok: <span class="ok2">${padTotal*8} bit</span> = <span class="ok2">${padTotal/64} × 512-bit</span></div>
+      `
+    },
+    {
+      title: '3-qadam: Boshlang\'ich qiymatlar (IV) va K konstantalari',
+      tag: 'INIT',
+      content: `
+        <div class="desc">H0–H7 qiymatlari birinchi 8 tub sonning (2,3,5,7,11,13,17,19) kvadrat ildizi kasr qismidan olingan.</div>
+        <div class="iv-grid">${H0.map((h,i)=>`<div class="iv-box"><div class="iv-lbl">H${i}</div><div class="iv-val a">${toH8(h)}</div></div>`).join('')}</div>
+        <div class="dvd"></div>
+        <div class="m2" style="margin-bottom:5px">K[0..7] — birinchi 8 ta K konstantasi (64 ta bor):</div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px">${Ksample.map((k,i)=>`<span style="font-size:9px;font-family:var(--mono);color:var(--acc);background:var(--bg1);border:1px solid var(--bdr);border-radius:3px;padding:2px 5px">K[${i}]=${toH8(k)}</span>`).join('')}<span style="font-size:9px;color:var(--t3);padding:2px 4px">...56 ta yana</span></div>
+      `
+    },
+    {
+      title: '4-qadam: 64 ta siqish raundi',
+      tag: 'COMPRESS',
+      content: `
+        <div class="desc">A,B,C,D,E,F,G,H o'zgaruvchilari H0–H7 bilan ishga tushiriladi. Har raundda quyidagi operatsiyalar bajariladi:</div>
+        <div class="m2">Ch(E,F,G) = <span class="hl2">(E & F) ^ (~E & G)</span></div>
+        <div class="m2">Maj(A,B,C) = <span class="hl2">(A & B) ^ (A & C) ^ (B & C)</span></div>
+        <div class="m2">Σ0(A) = <span class="hl2">ROTR²(A) ^ ROTR¹³(A) ^ ROTR²²(A)</span></div>
+        <div class="m2">Σ1(E) = <span class="hl2">ROTR⁶(E) ^ ROTR¹¹(E) ^ ROTR²⁵(E)</span></div>
+        <div class="m2" style="margin-top:5px">T₁ = <span class="hl2">h + Σ1(E) + Ch(E,F,G) + K[i] + W[i]</span></div>
+        <div class="m2">T₂ = <span class="hl2">Σ0(A) + Maj(A,B,C)</span></div>
+        <div class="dvd"></div>
+        <div class="rv-vis">
+          ${['R 1–16','R 17–32','R 33–48','R 49–64'].map((l,i)=>`
+            <div class="rv-row">
+              <div class="rv-lbl">${l}</div>
+              <div class="rv-bar"><div class="rv-fill" style="width:${(i+1)*25}%"></div></div>
+              <div class="rv-val">16 iter.</div>
+            </div>
+          `).join('')}
+        </div>
+      `
+    },
+    {
+      title: '5-qadam: Yakuniy digest — H0–H7 birlashtirish',
+      tag: 'DIGEST',
+      content: `
+        <div class="desc">64 raund tugagach A–H qiymatlari boshlang'ich H0–H7 ga qo'shiladi (mod 2³²). 8×32 = 256 bit.</div>
+        <div class="m2">H0 += A,  H1 += B,  ...,  H7 += H  <span style="color:var(--t3)">(mod 2³²)</span></div>
+        <div class="dvd"></div>
+        <div class="iv-grid">${hashParts.map((h,i)=>`<div class="iv-box"><div class="iv-lbl">H${i}</div><div class="iv-val g">${h}</div></div>`).join('')}</div>
+        <div class="final-box">
+          <div class="fb-lbl">SHA-256 HASH — "${text.slice(0,10).replace(/</g,'&lt;')}${text.length>10?'...':''}"</div>
+          <div class="fb-val">${finalHash}</div>
+        </div>
+      `
+    }
+  ];
+}
+
+// ═══════════════════════════════════════
+// SHA-1 STEPS  (160-bit · 512-bit blok · 80 raund)
+// ═══════════════════════════════════════
+function buildSHA1Steps(text, finalHash) {
+  const bytes = new TextEncoder().encode(text);
+  const bLen = bytes.length, bitLen = bLen * 8;
+  const hexMsg = Array.from(bytes).slice(0,24).map(b=>b.toString(16).padStart(2,'0')).join(' ');
+  const padTotal = Math.ceil((bLen + 9) / 64) * 64;
+  const padZeros = padTotal - bLen - 9;
+  const H0 = [0x67452301,0xEFCDAB89,0x98BADCFE,0x10325476,0xC3D2E1F0];
+  const sampleBits = Array.from(bytes).flatMap(b => (b>>>0).toString(2).padStart(8,'0').split('')).map(Number).slice(0,48);
+  const hashParts = finalHash.match(/.{8}/g) || [];
+
+  return [
+    {
+      title: '1-qadam: UTF-8 kodlash',
+      tag: 'ENCODE',
+      content: `
+        <div class="desc">Xabar UTF-8 baytlarga aylantiriladi. SHA-1 ham SHA-256 kabi <b style="color:var(--acc)">big-endian</b> 32-bitli so'zlardan foydalanadi.</div>
+        <div class="m2"><span class="hl2">"${text.slice(0,14).replace(/</g,'&lt;')}${text.length>14?'...':''}"</span> → HEX baytlar:</div>
+        <div class="m2" style="margin-top:5px;letter-spacing:.5px">${hexMsg}${bLen>24?' <span style="color:var(--t3)">...</span>':''}</div>
+        <div class="mini-bits">${sampleBits.map(b=>`<div class="bit ${b?'one':''}"></div>`).join('')}${bytes.length*8>48?`<span style="font-size:9px;color:var(--t3);margin-left:4px">... ${bitLen} bit</span>`:''}</div>
+        <div class="dvd"></div>
+        <div class="m2">Jami: <span class="ok2">${bitLen} bit</span> = <span class="ok2">${bLen} bayt</span></div>
+      `
+    },
+    {
+      title: '2-qadam: Padding — 512-bitga to\'ldirish',
+      tag: 'PAD',
+      content: `
+        <div class="desc">Xabar uzunligi 512-bitning ko'paytmasi bo'lishi kerak: "1" biti → nol bitlar → 64-bitli uzunlik (big-endian) qo'shiladi.</div>
+        <div class="mini-bits">
+          ${Array.from({length:Math.min(Math.ceil(bitLen/8),20)}).map(()=>'<div class="bit one"></div>').join('')}
+          ${Math.ceil(bitLen/8)>20?'<span style="font-size:9px;color:var(--t3);margin:0 3px">...</span>':''}
+          <div class="bit pad" title="0x80"></div>
+          ${Array.from({length:Math.min(padZeros,6)}).map(()=>'<div class="bit pad" style="opacity:.4"></div>').join('')}
+          ${padZeros>6?`<span style="font-size:9px;color:var(--t3);margin:0 3px">(${padZeros} ta 0)</span>`:''}
+          ${Array.from({length:8}).map(()=>'<div class="bit len"></div>').join('')}
+        </div>
+        <div class="leg">
+          <div class="li"><div class="ld" style="background:rgba(0,212,255,.25)"></div>ma'lumot</div>
+          <div class="li"><div class="ld" style="background:rgba(245,158,11,.2)"></div>padding (0x80 + 0lar)</div>
+          <div class="li"><div class="ld" style="background:rgba(16,185,129,.2)"></div>uzunlik (64-bit, big-endian)</div>
+        </div>
+        <div class="dvd"></div>
+        <div class="m2">Nollar soni: <span class="warn2">${padZeros} ta</span></div>
+        <div class="m2">Jami blok: <span class="ok2">${padTotal*8} bit</span> = <span class="ok2">${padTotal/64} × 512-bit</span></div>
+      `
+    },
+    {
+      title: '3-qadam: 5 ta ro\'yxatxonani ishga tushirish',
+      tag: 'INIT',
+      content: `
+        <div class="desc">SHA-1 da 5 ta 32-bitli holat o'zgaruvchisi bor (SHA-256 da 8 ta) → natija 160 bit.</div>
+        <div class="iv-grid" style="grid-template-columns:repeat(5,1fr)">${H0.map((h,i)=>`<div class="iv-box"><div class="iv-lbl">H${i}</div><div class="iv-val a">${toH8(h)}</div></div>`).join('')}</div>
+        <div class="dvd"></div>
+        <div class="m2">Har 512-bit blok 16 ta so'zdan W[0..15] → 80 tagacha kengaytiriladi:</div>
+        <div class="m2">W[t] = <span class="hl2">ROTL¹( W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16] )</span></div>
+      `
+    },
+    {
+      title: '4-qadam: 80 ta raund — 4 ta funksiya guruhi',
+      tag: 'COMPRESS',
+      content: `
+        <div class="desc">80 raund 4 ta 20-raundli guruhga bo'linadi, har birida o'z funksiyasi f va konstantasi K ishlatiladi.</div>
+        <div class="m2">t 0–19:  f = <span class="hl2">(B&C)|(~B&D)</span>   K=<span class="ok2">5a827999</span></div>
+        <div class="m2">t 20–39: f = <span class="hl2">B^C^D</span>         K=<span class="ok2">6ed9eba1</span></div>
+        <div class="m2">t 40–59: f = <span class="hl2">(B&C)|(B&D)|(C&D)</span> K=<span class="ok2">8f1bbcdc</span></div>
+        <div class="m2">t 60–79: f = <span class="hl2">B^C^D</span>         K=<span class="ok2">ca62c1d6</span></div>
+        <div class="dvd"></div>
+        <div class="m2">TEMP = <span class="hl2">ROTL⁵(A) + f + E + K + W[t]</span></div>
+        <div class="m2">E=D; D=C; C=<span class="hl2">ROTL³⁰(B)</span>; B=A; A=TEMP</div>
+        <div class="rv-vis">
+          ${['t 0–19','t 20–39','t 40–59','t 60–79'].map((l,i)=>`
+            <div class="rv-row">
+              <div class="rv-lbl">${l}</div>
+              <div class="rv-bar"><div class="rv-fill" style="width:${(i+1)*25}%"></div></div>
+              <div class="rv-val">20 iter.</div>
+            </div>
+          `).join('')}
+        </div>
+      `
+    },
+    {
+      title: '5-qadam: Yakuniy 160-bitli digest',
+      tag: 'DIGEST',
+      content: `
+        <div class="desc">80 raunddan keyin A–E qiymatlari H0–H4 ga qo'shiladi (mod 2³²). 5×32 = 160 bit.</div>
+        <div class="m2">H0 += A, H1 += B, H2 += C, H3 += D, H4 += E  <span style="color:var(--t3)">(mod 2³²)</span></div>
+        <div class="dvd"></div>
+        <div class="iv-grid" style="grid-template-columns:repeat(5,1fr)">${hashParts.map((h,i)=>`<div class="iv-box"><div class="iv-lbl">H${i}</div><div class="iv-val g">${h}</div></div>`).join('')}</div>
+        <div class="final-box">
+          <div class="fb-lbl">SHA-1 HASH — "${text.slice(0,10).replace(/</g,'&lt;')}${text.length>10?'...':''}"</div>
+          <div class="fb-val">${finalHash}</div>
+        </div>
+        <div class="warn-box"><i class="ti ti-alert-triangle" style="font-size:12px;vertical-align:-1px;margin-right:4px" aria-hidden="true"></i>SHA-1 kollizyaga qarshi buzilgan (SHAttered, 2017) — yangi tizimlarda SHA-256/512 dan foydalaning</div>
+      `
+    }
+  ];
+}
+
+// ═══════════════════════════════════════
+// SHA-512 STEPS  (512-bit · 1024-bit blok · 64-bitli so'zlar · 80 raund)
+// ═══════════════════════════════════════
+function buildSHA512Steps(text, finalHash) {
+  const bytes = new TextEncoder().encode(text);
+  const bLen = bytes.length, bitLen = bLen * 8;
+  const hexMsg = Array.from(bytes).slice(0,24).map(b=>b.toString(16).padStart(2,'0')).join(' ');
+  const padTotal = Math.ceil((bLen + 17) / 128) * 128;   // 1 bayt 0x80 + 16 bayt uzunlik
+  const padZeros = padTotal - bLen - 17;
+  const IV8 = ['6a09e667f3bcc908','bb67ae8584caa73b','3c6ef372fe94f82b','a54ff53a5f1d36f1',
+               '510e527fade682d1','9b05688c2b3e6c1f','1f83d9abfb41bd6b','5be0cd19137e2179'];
+  const Ksample = ['428a2f98d728ae22','7137449123ef65cd','b5c0fbcfec4d3b2f','e9b5dba58189dbbc'];
+  const hashParts = finalHash.match(/.{16}/g) || [];
+
+  return [
+    {
+      title: '1-qadam: UTF-8 kodlash',
+      tag: 'ENCODE',
+      content: `
+        <div class="desc">SHA-512 SHA-256 bilan bir xil oilada, lekin <b style="color:var(--acc)">64-bitli so'zlar</b> va <b style="color:var(--acc)">1024-bitli bloklar</b> bilan ishlaydi — 64-bitli protsessorlarda tezroq.</div>
+        <div class="m2"><span class="hl2">"${text.slice(0,14).replace(/</g,'&lt;')}${text.length>14?'...':''}"</span> → HEX baytlar:</div>
+        <div class="m2" style="margin-top:5px;letter-spacing:.5px">${hexMsg}${bLen>24?' <span style="color:var(--t3)">...</span>':''}</div>
+        <div class="dvd"></div>
+        <div class="m2">Blok hajmi: <span class="ok2">128 bayt = 1024 bit</span></div>
+        <div class="m2">Xabar uzunligi: <span class="ok2">${bitLen} bit</span> = <span class="ok2">${bLen} bayt</span></div>
+      `
+    },
+    {
+      title: '2-qadam: Padding — 1024-bitga to\'ldirish',
+      tag: 'PAD',
+      content: `
+        <div class="desc">Xabar 1024-bitning ko'paytmasiga to'ldiriladi: "1" biti → nol bitlar → <b style="color:var(--acc3)">128-bitli</b> uzunlik (big-endian). SHA-256 da uzunlik faqat 64-bit edi.</div>
+        <div class="mini-bits">
+          ${Array.from({length:Math.min(Math.ceil(bitLen/8),18)}).map(()=>'<div class="bit one"></div>').join('')}
+          ${Math.ceil(bitLen/8)>18?'<span style="font-size:9px;color:var(--t3);margin:0 3px">...</span>':''}
+          <div class="bit pad" title="0x80"></div>
+          ${Array.from({length:Math.min(padZeros,6)}).map(()=>'<div class="bit pad" style="opacity:.4"></div>').join('')}
+          ${padZeros>6?`<span style="font-size:9px;color:var(--t3);margin:0 3px">(${padZeros} ta 0)</span>`:''}
+          ${Array.from({length:16}).map(()=>'<div class="bit len"></div>').join('')}
+        </div>
+        <div class="leg">
+          <div class="li"><div class="ld" style="background:rgba(0,212,255,.25)"></div>ma'lumot</div>
+          <div class="li"><div class="ld" style="background:rgba(245,158,11,.2)"></div>padding</div>
+          <div class="li"><div class="ld" style="background:rgba(16,185,129,.2)"></div>uzunlik (128-bit!)</div>
+        </div>
+        <div class="dvd"></div>
+        <div class="m2">Nollar soni: <span class="warn2">${padZeros} ta</span></div>
+        <div class="m2">Jami blok: <span class="ok2">${padTotal*8} bit</span> = <span class="ok2">${padTotal/128} × 1024-bit</span></div>
+      `
+    },
+    {
+      title: '3-qadam: 8 ta 64-bitli IV va K konstantalari',
+      tag: 'INIT',
+      content: `
+        <div class="desc">H0–H7 birinchi 8 tub sonning kvadrat ildizi kasr qismidan, lekin <b style="color:var(--acc)">64 bit</b> aniqlikda olingan.</div>
+        <div class="iv-grid">${IV8.map((v,i)=>`<div class="iv-box"><div class="iv-lbl">H${i}</div><div class="iv-val a" style="font-size:8.5px">${v.slice(0,10)}…</div></div>`).join('')}</div>
+        <div class="dvd"></div>
+        <div class="m2" style="margin-bottom:5px">K[0..3] — birinchi 4 ta (jami 80 ta, 64-bitli):</div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px">${Ksample.map((k,i)=>`<span style="font-size:9px;font-family:var(--mono);color:var(--acc);background:var(--bg1);border:1px solid var(--bdr);border-radius:3px;padding:2px 5px">K[${i}]=${k.slice(0,8)}…</span>`).join('')}<span style="font-size:9px;color:var(--t3);padding:2px 4px">...76 ta yana</span></div>
+      `
+    },
+    {
+      title: '4-qadam: 80 ta siqish raundi',
+      tag: 'COMPRESS',
+      content: `
+        <div class="desc">A–H o'zgaruvchilari 80 raund davomida aralashtiriladi. Rotatsiya miqdorlari SHA-256 dan farq qiladi (64-bitli so'zlarga moslangan).</div>
+        <div class="m2">Ch(E,F,G) = <span class="hl2">(E & F) ^ (~E & G)</span></div>
+        <div class="m2">Maj(A,B,C) = <span class="hl2">(A & B) ^ (A & C) ^ (B & C)</span></div>
+        <div class="m2">Σ0(A) = <span class="hl2">ROTR²⁸ ^ ROTR³⁴ ^ ROTR³⁹</span></div>
+        <div class="m2">Σ1(E) = <span class="hl2">ROTR¹⁴ ^ ROTR¹⁸ ^ ROTR⁴¹</span></div>
+        <div class="m2" style="margin-top:5px">T₁ = <span class="hl2">H + Σ1(E) + Ch(E,F,G) + K[i] + W[i]</span></div>
+        <div class="m2">T₂ = <span class="hl2">Σ0(A) + Maj(A,B,C)</span>  <span style="color:var(--t3)">(mod 2⁶⁴)</span></div>
+        <div class="dvd"></div>
+        <div class="rv-vis">
+          ${['R 1–20','R 21–40','R 41–60','R 61–80'].map((l,i)=>`
+            <div class="rv-row">
+              <div class="rv-lbl">${l}</div>
+              <div class="rv-bar"><div class="rv-fill" style="width:${(i+1)*25}%"></div></div>
+              <div class="rv-val">20 iter.</div>
+            </div>
+          `).join('')}
+        </div>
+      `
+    },
+    {
+      title: '5-qadam: Yakuniy 512-bitli digest',
+      tag: 'DIGEST',
+      content: `
+        <div class="desc">80 raunddan keyin A–H qiymatlari H0–H7 ga qo'shiladi (mod 2⁶⁴). 8×64 = 512 bit.</div>
+        <div class="m2">H0 += A, H1 += B, ..., H7 += H  <span style="color:var(--t3)">(mod 2⁶⁴)</span></div>
+        <div class="dvd"></div>
+        <div class="iv-grid">${hashParts.map((h,i)=>`<div class="iv-box"><div class="iv-lbl">H${i}</div><div class="iv-val g" style="font-size:8.5px">${h.slice(0,10)}…</div></div>`).join('')}</div>
+        <div class="final-box">
+          <div class="fb-lbl">SHA-512 HASH — "${text.slice(0,10).replace(/</g,'&lt;')}${text.length>10?'...':''}"</div>
+          <div class="fb-val">${finalHash}</div>
+        </div>
+      `
+    }
+  ];
+}
+
+// ── INIT ──
+rebuildSteps();
+</script>
+</body>
+</html>
